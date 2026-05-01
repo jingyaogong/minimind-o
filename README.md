@@ -1,2 +1,1 @@
-# minimind-o
-Open-source Omni model at the 0.1B level
+It will be open-sourced soon, so stay tuned! 😀
