@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.DS_Store
+.vscode/
+.cursor/
+.claude/
+.specstory/
+.env
