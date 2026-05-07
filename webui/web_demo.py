@@ -451,7 +451,8 @@ def init_model(args):
     load_main_model(M['models'][model_name], model_name)
     try:
         from transformers import MimiModel
-        M['mimi'] = MimiModel.from_pretrained('../model/mimi').eval()
+        M['mimi'] = MimiModel.from_pretrained('../model/mimi').eval().to(args.device)
+        if args.device != 'cpu': M['mimi'] = M['mimi'].half()
         print('Mimi model loaded')
     except: M['mimi'] = None
     try:
@@ -491,12 +492,12 @@ def init_model(args):
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
-    p.add_argument('--load_from', default='./')
-    p.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu')
-    p.add_argument('--port', default=7860, type=int)
-    p.add_argument('--audio_chunk_frames', default=4, type=int)
-    p.add_argument('--audio_overlap', default=2, type=int)
-    p.add_argument('--max_history_turns', default=0, type=int)
+    p.add_argument('--load_from', default='./', help='模型权重搜索目录；目录下可放多个 HF 格式模型，WebUI 会自动扫描并允许切换。')
+    p.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', help='推理设备；CUDA 可用时默认 cuda。显存不足或排查环境问题时可改为 cpu。')
+    p.add_argument('--port', default=7860, type=int, help='WebUI 服务端口；端口被占用或需要同时启动多个实例时调整。')
+    p.add_argument('--audio_chunk_frames', default=4, type=int, help='流式播放每次解码的 Mimi frame 数；默认 4 约 320ms。WebUI 播放卡顿时可调大到 8/12，低延迟优先时保持 4。')
+    p.add_argument('--audio_overlap', default=2, type=int, help='分块 Mimi 解码的重叠帧数；默认 2 用于缓解块边界断裂。一般不需要调整，边界杂音明显时可适当增大。')
+    p.add_argument('--max_history_turns', default=0, type=int, help='对话历史轮数；默认 0 不带历史以降低延迟和显存。需要多轮上下文时调大，但会增加 prefill 成本。')
     args = p.parse_args()
     init_model(args)
     app.run(host='0.0.0.0', port=args.port, threaded=True)
