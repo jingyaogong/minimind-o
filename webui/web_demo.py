@@ -72,7 +72,7 @@ def _mimi_decode(frames):
     mc = torch.tensor(codes, dtype=torch.long).T.unsqueeze(0)
     mc = torch.where(mc >= 2049, torch.zeros_like(mc), mc)
     with torch.no_grad():
-        au = M['mimi'].decode(mc).audio_values.squeeze().cpu().numpy()
+        au = M['mimi'].decode(mc.to(M['device'])).audio_values.squeeze().cpu().numpy()
     return au, mc.shape[-1]
 
 def pcm_bytes(frames, ov):
