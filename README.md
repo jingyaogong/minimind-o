@@ -187,6 +187,8 @@ cp -r minimind-3o ./scripts/minimind-3o
 cd scripts && python web_demo_omni.py
 ```
 
+注：`scripts/web_demo_omni.py` 是 Gradio 非实时演示，上传/录音音频会在后端按实际采样率重采样到 16k；实时语音通话请使用 `webui/web_demo.py`。
+
 ## Ⅱ 🛠️ 模型训练
 
 <details style="color:rgb(128,128,128)">

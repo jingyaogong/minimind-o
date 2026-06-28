@@ -188,6 +188,8 @@ cp -r minimind-3o ./scripts/minimind-3o
 cd scripts && python web_demo_omni.py
 ```
 
+Note: `scripts/web_demo_omni.py` is the non-realtime Gradio demo. Uploaded or recorded audio is resampled on the backend from its actual sample rate to 16 kHz; use `webui/web_demo.py` for realtime voice calls.
+
 ## Ⅱ 🛠️ Training
 
 <details style="color:rgb(128,128,128)">
