@@ -99,7 +99,7 @@ def main():
     parser.add_argument('--temperature', default=0.7, type=float, help="Thinker生成温度")
     parser.add_argument('--top_p', default=0.85, type=float, help="nucleus采样阈值")
     parser.add_argument('--output_dir', default='./output_audio/', type=str, help="输出音频保存目录")
-    parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else 'cpu', type=str, help="运行设备")
+    parser.add_argument('--device', default='cuda' if torch.cuda.is_available() else ('mps' if torch.backends.mps.is_available() else 'cpu'), type=str, help="运行设备")
     parser.add_argument('--audio_dir', default='./dataset/eval_omni/', type=str, help="测试音频目录")
     parser.add_argument('--image_dir', default='./dataset/eval_omni/', type=str, help="测试图像目录")
     parser.add_argument('--open_thinking', default=0, type=int, help="是否开启思考模式（0=否，1=是）（思考模式下禁用audio输出）")
