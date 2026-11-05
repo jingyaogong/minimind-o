@@ -1,5 +1,7 @@
 import os, math, torch, soundfile as sf, librosa, warnings, numpy as np, onnxruntime as ort, logging, contextlib, io
 from types import SimpleNamespace
+from dataclasses import dataclass
+from typing import Optional
 from torch import nn
 from torch.nn import functional as F
 from transformers.modeling_outputs import MoeCausalLMOutputWithPast
@@ -27,6 +29,11 @@ class OmniConfig(MiniMindConfig):
         self.image_hidden_size = kwargs.get("image_hidden_size", 768)
         self.image_token_len = kwargs.get("image_token_len", 64)
         self.bridge_layer = kwargs.get("bridge_layer", self.num_hidden_layers // 2 - 1)
+
+# 避免 DDP + compile 重建 OmniCausalLMOutputWithPast（不支持 audio_logits 参数）
+@dataclass
+class OmniCausalLMOutputWithPast(MoeCausalLMOutputWithPast):
+    audio_logits: Optional[list[torch.FloatTensor]] = None
 
 class MMAudioProjector(nn.Module):
     def __init__(self, in_dim, out_dim):
@@ -311,9 +318,12 @@ class MiniMindOmni(MiniMindForCausalLM):
         text_logits = self.thinker.lm_head(h_thinker[:, slice_indices, :])
         audio_logits = self.talker.lm_head(h_talker[:, slice_indices, :])
         
-        out = MoeCausalLMOutputWithPast(aux_loss=aux_loss, logits=text_logits, past_key_values=presents)
-        out.audio_logits = audio_logits
-        return out
+        return OmniCausalLMOutputWithPast(
+            aux_loss=aux_loss,
+            logits=text_logits,
+            past_key_values=presents,
+            audio_logits=audio_logits,
+        )
 
     @torch.inference_mode()
     def generate(self, input_ids, eos_token_id=2, max_new_tokens=1024, temperature=0.75, top_p=0.90,
